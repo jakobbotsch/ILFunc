@@ -73,7 +73,7 @@ namespace ILFunc
 			{
 				string il = Path.Combine(dir.Path, Path.ChangeExtension(Path.GetFileName(pe), ".il"));
 
-				if (!Run(ildasm, string.Format("/linenum /typelist /utf8 /nobar \"{0}\" \"/out={1}\"", pe, il)))
+				if (!Run(ildasm, $"/linenum /typelist /utf8 /nobar \"{pe}\" \"/out={il}\""))
 					return 4;
 
 				string newIL = RewriteIL(File.ReadAllText(il));
@@ -112,16 +112,20 @@ namespace ILFunc
 				WindowStyle = ProcessWindowStyle.Hidden,
 				UseShellExecute = false,
 				RedirectStandardOutput = true,
+				RedirectStandardError = true,
 			};
 
 			Process process = Process.Start(processStartInfo);
-			string output = process.StandardOutput.ReadToEnd();
+			string outputNormal = process.StandardOutput.ReadToEnd();
+			string outputError = process.StandardError.ReadToEnd();
 			process.WaitForExit();
 
 			if (process.ExitCode != 0)
 			{
 				Console.WriteLine("'{0}' failed with exit code {1}. Output:", file, process.ExitCode);
-				Console.WriteLine(output);
+				Console.WriteLine(outputNormal);
+				Console.WriteLine("Errors:");
+				Console.WriteLine(outputError);
 				return false;
 			}
 
